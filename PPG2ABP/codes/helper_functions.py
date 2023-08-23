@@ -86,13 +86,14 @@ def prepareDataDS(mdl, X):
 	YPs = mdl.predict(X)
 	
 	for i in tqdm(range(len(X)),desc='Preparing Data for DS'):
-		
-	   X2.append(np.array(YPs[0][i]))
+		X2.append(np.array(YPs[0][i]))
 
 	X2 = np.array(X2)
 
-
 	return X2
+
+
+	
 
 
 def prepareLabel(Y):
