@@ -10,23 +10,28 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set()
+from dotenv import load_dotenv
 
+load_dotenv()
+PP2ABP_PATH = os.getenv('PP2ABP_PATH')
 
-def process_data():
+def process_data(fs=125, t=10, dt=5):
 	"""
 		Extracts the SBP and DBP values of 10 seconds long episodes
 		while taking new episodes 5 seconds apart
 		and stores them as .csv files
+		fs(int): sampling frequency
+		t(int): length of ppg episodes
+		dt(int): step size of taking the next episode
 
 		This function is likely to take 6-7 days to run on a Intel Core i7-7700 CPU
 	"""
 
-	fs = 125								# sampling frequency
-	t = 10									# length of ppg episodes
-	dt = 5									# step size of taking the next episode
-	
 	samples_in_episode = round(fs * t)		# number of samples in an episode
 	d_samples = round(fs * dt)				# number of samples in a step
+
+	# change directory to PP2ABP_PATH
+	os.chdir(PP2ABP_PATH)
 
 	try:									# create the processed_data directory
 		os.makedirs('processed_data')
@@ -35,11 +40,11 @@ def process_data():
 
 	for k in range(1,5):					# process for the 4 different parts of the data
 
-		print("Processing file part {} out of 4".format(k))
+		print(f"Processing file part {k} out of 4")
 
-		f = h5py.File(os.path.join('raw_data','Part_{}.mat'.format(k)), 'r')		# loads the data
+		f = h5py.File(os.path.join('raw_data',f'Part_{k}.mat'), 'r')		# loads the data
 
-		ky = 'Part_' + str(k)														# key 
+		ky = f'Part_{k}'													# key 
 
 		for i in tqdm(range(len(f[ky])),desc='Reading Records'):					# reading the records
 
@@ -58,10 +63,10 @@ def process_data():
 				sbp = max(bp[j:j+samples_in_episode])		# sbp value
 				dbp = min(bp[j:j+samples_in_episode])    	# dbp value
 
-				output_str += '{},{},{}\n'.format(j,sbp,dbp)	# append to the csv file
+				output_str += f'{j},{sbp},{dbp}\n'	# append to the csv file
 
 
-			fp = open(os.path.join('processed_data','Part_{}_{}.csv'.format(k,i)),'w')		# create the csv file
+			fp = open(os.path.join('processed_data',f'Part_{k}_{i}.csv'),'w')		# create the csv file
 			fp.write(output_str)															# write the csv file
 			fp.close()																		# close the csv file
 
@@ -241,7 +246,7 @@ def downsample_data(minThresh=2500, ratio=0.25):
 
 	lut = {}				# garbage collection
 
-	print('Total {} episodes have been selected'.format(len(candidates)))	
+	print(f'Total {len(candidates)} episodes have been selected')	
 
 	pickle.dump(candidates, open('candidates.p', 'wb'))		# save the candidates
 
@@ -295,14 +300,14 @@ def extract_episodes(candidates):
 
 	for k in tqdm(range(1,5), desc='Reading from Files'):				# iterating throug the files
 
-		f = h5py.File('./raw_data/Part_{}.mat'.format(k), 'r')
+		f = h5py.File(f'./raw_data/Part_{k}.mat', 'r')
 
 		fs = 125																# sampling frequency
 		t = 10																	# length of ppg episodes			
 		samples_in_episode = round(fs * t)										# number of samples in an episode
-		ky = 'Part_' + str(k)													# key
+		ky = f'Part_{k}' + str(k)													# key
 
-		for indix in tqdm(range(len(candidates)), desc='Reading from File {}/4'.format(k)):		# iterating through the candidates
+		for indix in tqdm(range(len(candidates)), desc=f'Reading from File {k}/4'):		# iterating through the candidates
 
 			if(candidates[indix][0] != k):					# this candidate is from a different file
 				continue
@@ -318,8 +323,8 @@ def extract_episodes(candidates):
 				ppg.append(f[f[ky][record_no][0]][j][0])	# ppg signal
 				abp.append(f[f[ky][record_no][0]][j][1])	# abp signal
 
-			pickle.dump(np.array(ppg), open(os.path.join('ppgs', '{}.p'.format(indix)), 'wb'))		# saving the ppg signal
-			pickle.dump(np.array(abp), open(os.path.join('abps', '{}.p'.format(indix)), 'wb'))		# saving the abp signal
+			pickle.dump(np.array(ppg), open(os.path.join('ppgs', f'{indix}.p'), 'wb'))		# saving the ppg signal
+			pickle.dump(np.array(abp), open(os.path.join('abps', f'{indix}.p'), 'wb'))		# saving the abp signal
 
 
 
