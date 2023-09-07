@@ -13,7 +13,10 @@ sns.set()
 from dotenv import load_dotenv
 
 load_dotenv()
-PP2ABP_PATH = os.getenv('PP2ABP_PATH')
+#PPG2ABP_PATH = os.getenv('PPG2ABP_PATH')
+# change directory to PP2ABP_PATH
+os.chdir(os.getenv('PPG2ABP_PATH'))
+
 
 def process_data(fs=125, t=10, dt=5):
 	"""
@@ -30,8 +33,6 @@ def process_data(fs=125, t=10, dt=5):
 	samples_in_episode = round(fs * t)		# number of samples in an episode
 	d_samples = round(fs * dt)				# number of samples in a step
 
-	# change directory to PP2ABP_PATH
-	os.chdir(PP2ABP_PATH)
 
 	try:									# create the processed_data directory
 		os.makedirs('processed_data')
@@ -53,12 +54,12 @@ def process_data(fs=125, t=10, dt=5):
 
 			output_str = '10s,SBP,DBP\n'							# starting text for a new csv file
 
-			for j in tqdm(range(len(f[f[ky][i][0]])),desc='Reading Samples from Record {}/3000'.format(i+1)):	# reading samples from records
+			for j in tqdm(range(len(f[f[ky][i][0]])),desc=f'Reading Samples from Record {i+1}/3000'):	# reading samples from records
 				
 				signal.append(f[f[ky][i][0]][j][0])					# ppg signal
 				bp.append(f[f[ky][i][0]][j][1])						# abp signal
 
-			for j in tqdm(range(0,len(f[f[ky][i][0]])-samples_in_episode, d_samples),desc='Processing Episodes from Record {}/3000'.format(i+1)):	# computing the sbp and dbp values
+			for j in tqdm(range(0,len(f[f[ky][i][0]])-samples_in_episode, d_samples),desc=f'Processing Episodes from Record {i+1}/3000'):	# computing the sbp and dbp values
 				
 				sbp = max(bp[j:j+samples_in_episode])		# sbp value
 				dbp = min(bp[j:j+samples_in_episode])    	# dbp value
@@ -298,14 +299,18 @@ def extract_episodes(candidates):
 	except Exception as e:
 		print(e)
 
-	for k in tqdm(range(1,5), desc='Reading from Files'):				# iterating throug the files
 
+	print("Reading from Files ghgfdhgfd")
+	for k in tqdm(range(1,5), desc='Reading from Files'):				# iterating throug the files
+		print(f"------Reading from File {k}/4")
 		f = h5py.File(f'./raw_data/Part_{k}.mat', 'r')
 
 		fs = 125																# sampling frequency
 		t = 10																	# length of ppg episodes			
 		samples_in_episode = round(fs * t)										# number of samples in an episode
 		ky = f'Part_{k}' + str(k)													# key
+
+		print("hey")
 
 		for indix in tqdm(range(len(candidates)), desc=f'Reading from File {k}/4'):		# iterating through the candidates
 
