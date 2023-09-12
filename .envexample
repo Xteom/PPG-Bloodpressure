@@ -1,0 +1,3 @@
+MY_PATH = "../../../mnt/o/itam/gtcardio" 
+GTCARDIO_PATH = "gtc_data"#"../../../mnt/o/itam/gtcardio/gtc_data"
+PP2ABP_PATH = "../../../mnt/o/itam/gtcardio/data"
